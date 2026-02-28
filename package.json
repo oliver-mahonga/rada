@@ -19,5 +19,8 @@
     "prisma@6.19.2": {
       "unplugged": true
     }
+  },
+  "dependencies": {
+    "next-themes": "^0.4.6"
   }
 }
