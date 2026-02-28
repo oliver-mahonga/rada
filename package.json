@@ -1,4 +1,23 @@
 {
   "name": "rada",
-  "packageManager": "yarn@4.12.0"
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "web": "yarn workspace web dev",
+    "api": "yarn workspace api start:dev",
+    "dev": "yarn workspaces foreach -pi run dev"
+  },
+  "devDependencies": {
+    "supabase": "^2.76.15"
+  },
+  "dependenciesMeta": {
+    "@prisma/client@6.19.2": {
+      "unplugged": true
+    },
+    "prisma@6.19.2": {
+      "unplugged": true
+    }
+  }
 }
