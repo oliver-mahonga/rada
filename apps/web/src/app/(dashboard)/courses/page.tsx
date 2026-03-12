@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link"; // IMPORT LINK
 import { cn } from "@/lib/utils";
 import { 
   Search, Filter, Flame, Monitor, 
   Cpu, Coins, PenTool, Code, 
   Lock, ArrowRight, Users, 
-  Terminal, LineChart, Mic2, FileJson, Layers
+  Terminal, LineChart, Mic2
 } from "lucide-react";
 
 const labCategories = [
@@ -19,6 +20,7 @@ const labCategories = [
 
 const courses = [
   {
+    id: "llm-architecture", // UNIQUE ID
     title: "Large Language Model Architecture",
     category: "ai",
     level: "Advanced",
@@ -31,6 +33,7 @@ const courses = [
     toolIcon: <Cpu size={16} className="text-blue-400" />
   },
   {
+    id: "bitcoin-economics", // UNIQUE ID
     title: "Bitcoin Protocol Deep Dive",
     category: "crypto",
     level: "Expert",
@@ -43,6 +46,7 @@ const courses = [
     toolIcon: <LineChart size={16} className="text-orange-400" />
   },
   {
+    id: "copywriting-framework",
     title: "High-Ticket Closing Lab",
     category: "sales",
     level: "Intermediate",
@@ -55,6 +59,7 @@ const courses = [
     toolIcon: <Mic2 size={16} className="text-pink-400" />
   },
   {
+    id: "fullstack-systems",
     title: "Fullstack System Architecture",
     category: "dev",
     level: "Advanced",
@@ -73,7 +78,6 @@ export default function SkillLabs() {
 
   return (
     <div className="space-y-12 pb-20">
-      
       {/* ── HEADER & SEARCH ── */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
         <div>
@@ -123,22 +127,12 @@ export default function SkillLabs() {
       {/* ── LAB GRID ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
         {courses.filter(c => activeTab === "all" || c.category === activeTab).map((course, i) => (
-          <div 
-            key={i} 
-            className={cn(
-              "group relative overflow-hidden rounded-[3rem] border transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]",
-              course.border,
-              "bg-[#0f0a1e]"
-            )}
-          >
+          <div key={i} className={cn("group relative overflow-hidden rounded-[3rem] border transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]", course.border, "bg-[#0f0a1e]")}>
             <div className={cn("absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity", course.gradient)} />
-            
             <div className="p-10 relative z-10">
               <div className="flex justify-between items-start mb-8">
                 <div className="flex gap-3">
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-white uppercase tracking-tighter">
-                    {course.level}
-                  </span>
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-white uppercase tracking-tighter">{course.level}</span>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">{course.status}</span>
@@ -150,15 +144,9 @@ export default function SkillLabs() {
                 </div>
               </div>
 
-              <h3 className="text-3xl font-black text-white tracking-tighter mb-4 leading-tight group-hover:text-violet-400 transition-all">
-                {course.title}
-              </h3>
-              
-              <p className="text-[#6b6490] font-medium text-sm leading-relaxed mb-6 max-w-md italic">
-                "{course.description}"
-              </p>
+              <h3 className="text-3xl font-black text-white tracking-tighter mb-4 leading-tight group-hover:text-violet-400 transition-all">{course.title}</h3>
+              <p className="text-[#6b6490] font-medium text-sm leading-relaxed mb-6 max-w-md italic">"{course.description}"</p>
 
-              {/* ── THE INNOVATION: INTEGRATED TOOLS ── */}
               <div className="flex flex-wrap gap-2 mb-8">
                 {course.tools.map((tool, idx) => (
                   <div key={idx} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/5 text-[9px] font-black text-white/60 uppercase tracking-widest group-hover:border-white/20 transition-all">
@@ -175,24 +163,22 @@ export default function SkillLabs() {
                       <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${course.title + i}`} alt="User" />
                     </div>
                   ))}
-                  <div className="w-8 h-8 rounded-full border-2 border-[#0f0a1e] bg-violet-600 flex items-center justify-center text-[8px] font-black">
-                    +12
-                  </div>
+                  <div className="w-8 h-8 rounded-full border-2 border-[#0f0a1e] bg-violet-600 flex items-center justify-center text-[8px] font-black">+12</div>
                 </div>
                 
-                <button className="flex items-center gap-3 px-6 py-3 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all">
-                  Initialize Lab <ArrowRight size={14} />
-                </button>
+                {/* ── THE CLICKABLE LINK ── */}
+                <Link href={`/courses/${course.id}`}>
+                  <button className="flex items-center gap-3 px-6 py-3 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all">
+                    Initialize Lab <ArrowRight size={14} />
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
         ))}
 
-        {/* ── LOCKED / UPCOMING LAB ── */}
         <div className="rounded-[3rem] border border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center p-10 opacity-40 group cursor-not-allowed">
-           <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 text-white/20 group-hover:text-white/40 transition-colors">
-              <Lock size={24} />
-           </div>
+           <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 text-white/20 group-hover:text-white/40 transition-colors"><Lock size={24} /></div>
            <p className="text-xs font-black uppercase tracking-[4px] text-white/40">Expansion Pending</p>
            <p className="text-[10px] font-bold text-[#6b6490] mt-2 italic">Neural Sync Scheduled Q3 2026</p>
         </div>
