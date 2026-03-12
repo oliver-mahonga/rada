@@ -1,24 +1,29 @@
 "use client";
-import { cn } from "@/lib/utils";
+
 import { useState } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Navbar } from "@/components/dashboard/navbar";
+import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050308]">
+    <div className="flex min-h-screen bg-[#050308] overflow-hidden">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       
       {/* Dynamic Margin based on sidebar state */}
       <div className={cn(
-        "transition-all duration-300 ease-in-out",
+        "flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out",
         isCollapsed ? "ml-20" : "ml-72"
       )}>
         <Navbar isCollapsed={isCollapsed} />
-        <main className="pt-24 p-6 lg:p-10 max-w-[1600px] mx-auto animate-in fade-in duration-1000">
-          {children}
+        
+        {/* ── THE FIX: h-screen - 80px (navbar height) ── */}
+        <main className="flex-1 overflow-y-auto mt-20 p-6 lg:p-10">
+          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-1000">
+            {children}
+          </div>
         </main>
       </div>
     </div>
