@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, FlaskConical, Users2, Trophy, Cpu, Wallet,
   Settings, ChevronLeft, ChevronRight, NotebookPen, 
-  Terminal, ShieldAlert, Sparkles
+  Terminal, ShieldAlert, Sparkles,
+  Bitcoin
 } from "lucide-react";
 
 const navigation = [
@@ -17,6 +18,8 @@ const navigation = [
   { name: "Connection Hub", href: "/community", icon: Users2, color: "text-purple-400" },
   { name: "Neural Link", href: "/ai-mentor", icon: Cpu, color: "text-rose-400" },
   { name: "Global Arena", href: "/leaderboard", icon: Trophy, color: "text-yellow-400" },
+  { name: "Profile", href: "/profile", icon: Users2, color: "text-yellow-400" },
+  { name: "Market Insights", href: "/market-insights", icon: Bitcoin, color: "text-cyan-400" },
 ];
 
 export function Sidebar({ isCollapsed, setIsCollapsed }: { isCollapsed: boolean, setIsCollapsed: (v: boolean) => void }) {
