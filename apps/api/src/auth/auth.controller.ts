@@ -1,12 +1,7 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { LoginAuthDto } from './dto/login-auth.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Auth')
@@ -16,8 +11,13 @@ export class AuthController {
 
   @Post('signup')
   @ApiOperation({ summary: 'Enrollment for Rada University' })
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   create(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.create(createAuthDto);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Member Access Authorization' })
+  login(@Body() loginAuthDto: LoginAuthDto) {
+    return this.authService.login(loginAuthDto); // We'll add this to service next
   }
 }
