@@ -1,342 +1,1134 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { 
-  Play, CheckCircle2, Terminal, Cpu, MessageSquare, 
-  Zap, Maximize2, Layers, Code2, Landmark, LineChart,
-  Mic2, Volume2, BarChart3, ShieldAlert, PhoneIncoming,
-  Upload, X, Trophy, Globe, Activity
+import {
+  Play,
+  CheckCircle2,
+  Cpu,
+  MessageSquare,
+  Zap,
+  Maximize2,
+  Mic2,
+  Upload,
+  X,
+  Trophy,
+  Activity,
+  BookOpen,
+  Clock3,
+  Brain,
+  FileText,
+  ClipboardCheck,
+  ArrowRight,
+  Star,
+  Video,
+  TerminalSquare,
+  BarChart3,
+  Lightbulb,
+  Sparkles,
+  FolderKanban,
+  Award,
+  CirclePlay,
+  Globe,
+  ShieldCheck,
+  Target,
+  Users,
+  GraduationCap,
+  BriefcaseBusiness,
+  WalletCards,
 } from "lucide-react";
+
+type Step = {
+  id: number;
+  title: string;
+  duration: string;
+  type: "video" | "lab" | "quiz" | "project";
+  completed?: boolean;
+};
+
+type Resource = {
+  title: string;
+  type: string;
+};
+
+type Outcome = {
+  title: string;
+};
+
+type Recommendation = {
+  title: string;
+  tag: string;
+  icon: React.ReactNode;
+};
 
 export default function InternalLab() {
   const params = useParams();
   const [activeStep, setActiveStep] = useState(1);
-  const [activeTab, setActiveTab] = useState("main");
-  const [price, setPrice] = useState(98432.40);
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "lab" | "video" | "notes" | "project"
+  >("overview");
+  const [price, setPrice] = useState(98432.4);
   const [isRecording, setIsRecording] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [mentorPrompt, setMentorPrompt] = useState("");
 
-  // ── DYNAMIC LOGIC SWITCHES ──
-  const id = params.id?.toString() || "";
+  const id = params.id?.toString().toLowerCase() || "";
+
   const isCrypto = id.includes("bitcoin") || id.includes("crypto");
-  const isSales = id.includes("copywriting") || id.includes("sales") || id.includes("closing");
+  const isSales =
+    id.includes("copywriting") ||
+    id.includes("sales") ||
+    id.includes("closing");
   const isAI = id.includes("llm") || id.includes("ai");
   const isDev = !isCrypto && !isSales && !isAI;
 
-  // ── BITCOIN LIVE PRICE SIMULATION ──
   useEffect(() => {
     if (!isCrypto) return;
     const interval = setInterval(() => {
-      setPrice(p => p + (Math.random() * 20 - 10));
-    }, 2000);
+      setPrice((p) => p + (Math.random() * 120 - 60));
+    }, 2200);
     return () => clearInterval(interval);
   }, [isCrypto]);
 
-  // ── DYNAMIC CURRICULUM STEPS ──
-  const getSteps = () => {
-    if (isCrypto) return [
-      { id: 1, title: "UTXO Model Overview", duration: "5:20", type: "video" },
-      { id: 2, title: "Live Mempool Analysis", duration: "Interactive", type: "lab" },
-      { id: 3, title: "Halving Cycle Theory", duration: "12:00", type: "video" },
-    ];
-    if (isSales) return [
-      { id: 1, title: "Frame Control Basics", duration: "4:15", type: "video" },
-      { id: 2, title: "Voice AI Roleplay", duration: "Active", type: "lab" },
-      { id: 3, title: "Closing The Whale", duration: "08:00", type: "video" },
-    ];
-    if (isAI) return [
-        { id: 1, title: "Transformer Attention", duration: "10:20", type: "video" },
-        { id: 2, title: "Weight Optimization", duration: "Sandbox", type: "lab" },
-        { id: 3, title: "Fine-tuning Protocol", duration: "14:00", type: "video" },
-    ];
-    return [
-      { id: 1, title: "Architecture Briefing", duration: "6:30", type: "video" },
-      { id: 2, title: "Node Implementation", duration: "Interactive", type: "lab" },
-      { id: 3, title: "System Stress Test", duration: "15:00", type: "video" },
-    ];
-  };
+  const courseMeta = useMemo(() => {
+    if (isCrypto) {
+      return {
+        title: "Bitcoin Economics & Market Intelligence",
+        category: "Finance / Crypto",
+        level: "Intermediate",
+        duration: "3h 42m",
+        students: "8,412 learners",
+        progress: 61,
+        theme:
+          "from-orange-500/20 via-amber-500/10 to-yellow-500/10 border-orange-500/20",
+        accent: "text-orange-400",
+        short:
+          "Understand Bitcoin cycles, market structure, order flow, and long-term wealth positioning.",
+        mentor:
+          "You’re currently in a high-signal market intelligence module. Focus on price structure, liquidity zones, and cycle timing instead of reacting emotionally.",
+      };
+    }
 
-  const steps = getSteps();
+    if (isSales) {
+      return {
+        title: "Copywriting, Persuasion & Sales Closing",
+        category: "Marketing / Sales",
+        level: "Advanced",
+        duration: "4h 16m",
+        students: "13,980 learners",
+        progress: 47,
+        theme:
+          "from-pink-500/20 via-rose-500/10 to-fuchsia-500/10 border-pink-500/20",
+        accent: "text-pink-400",
+        short:
+          "Master persuasion, objection handling, voice tonality, and high-converting offer presentation.",
+        mentor:
+          "Your biggest edge in sales is certainty and emotional control. Speak slower, reduce neediness, and lead the frame.",
+      };
+    }
+
+    if (isAI) {
+      return {
+        title: "Applied AI Systems & LLM Engineering",
+        category: "AI / Engineering",
+        level: "Professional",
+        duration: "5h 05m",
+        students: "10,124 learners",
+        progress: 38,
+        theme:
+          "from-blue-500/20 via-cyan-500/10 to-indigo-500/10 border-blue-500/20",
+        accent: "text-blue-400",
+        short:
+          "Learn modern AI workflows, prompt systems, transformer concepts, and practical product integration.",
+        mentor:
+          "Move beyond theory. Think in terms of systems: prompt design, retrieval, evaluation, and business utility.",
+      };
+    }
+
+    return {
+      title: "Software Engineering Systems Lab",
+      category: "Software Engineering",
+      level: "Intermediate",
+      duration: "4h 48m",
+      students: "16,233 learners",
+      progress: 72,
+      theme:
+        "from-violet-500/20 via-indigo-500/10 to-fuchsia-500/10 border-violet-500/20",
+      accent: "text-violet-400",
+      short:
+        "Build production-grade engineering thinking through architecture, implementation, debugging, and deployment workflows.",
+      mentor:
+        "Don’t just code to finish. Code to design systems that scale, fail gracefully, and are easy to maintain.",
+    };
+  }, [isAI, isCrypto, isDev, isSales]);
+
+  const steps: Step[] = useMemo(() => {
+    if (isCrypto) {
+      return [
+        {
+          id: 1,
+          title: "Bitcoin Fundamentals & UTXO Model",
+          duration: "12 min",
+          type: "video",
+          completed: true,
+        },
+        {
+          id: 2,
+          title: "Live Mempool & Liquidity Analysis",
+          duration: "Interactive",
+          type: "lab",
+        },
+        {
+          id: 3,
+          title: "Market Cycles & Halving Theory",
+          duration: "16 min",
+          type: "video",
+        },
+        {
+          id: 4,
+          title: "Risk Management Quiz",
+          duration: "8 min",
+          type: "quiz",
+        },
+        {
+          id: 5,
+          title: "Portfolio Strategy Project",
+          duration: "Project",
+          type: "project",
+        },
+      ];
+    }
+
+    if (isSales) {
+      return [
+        {
+          id: 1,
+          title: "Offer Framing & Positioning",
+          duration: "10 min",
+          type: "video",
+          completed: true,
+        },
+        {
+          id: 2,
+          title: "AI Voice Roleplay Simulation",
+          duration: "Interactive",
+          type: "lab",
+        },
+        {
+          id: 3,
+          title: "Objection Handling Framework",
+          duration: "14 min",
+          type: "video",
+        },
+        {
+          id: 4,
+          title: "Sales Psychology Quiz",
+          duration: "6 min",
+          type: "quiz",
+        },
+        {
+          id: 5,
+          title: "Closing Script Submission",
+          duration: "Project",
+          type: "project",
+        },
+      ];
+    }
+
+    if (isAI) {
+      return [
+        {
+          id: 1,
+          title: "Transformer & Attention Basics",
+          duration: "15 min",
+          type: "video",
+          completed: true,
+        },
+        {
+          id: 2,
+          title: "Prompt & Weight Sandbox",
+          duration: "Interactive",
+          type: "lab",
+        },
+        {
+          id: 3,
+          title: "Fine-tuning & Evaluation",
+          duration: "18 min",
+          type: "video",
+        },
+        {
+          id: 4,
+          title: "Prompt Engineering Assessment",
+          duration: "9 min",
+          type: "quiz",
+        },
+        {
+          id: 5,
+          title: "AI Workflow Build Project",
+          duration: "Project",
+          type: "project",
+        },
+      ];
+    }
+
+    return [
+      {
+        id: 1,
+        title: "System Architecture Overview",
+        duration: "11 min",
+        type: "video",
+        completed: true,
+      },
+      {
+        id: 2,
+        title: "Interactive Code Implementation",
+        duration: "Interactive",
+        type: "lab",
+      },
+      {
+        id: 3,
+        title: "Debugging & Performance Thinking",
+        duration: "13 min",
+        type: "video",
+      },
+      {
+        id: 4,
+        title: "Engineering Knowledge Check",
+        duration: "7 min",
+        type: "quiz",
+      },
+      {
+        id: 5,
+        title: "Mini Production Build",
+        duration: "Project",
+        type: "project",
+      },
+    ];
+  }, [isAI, isCrypto, isSales]);
+
+  const currentStep = steps.find((s) => s.id === activeStep) || steps[0];
+
+  const resources: Resource[] = useMemo(() => {
+    if (isCrypto) {
+      return [
+        { title: "Bitcoin Whitepaper Summary", type: "PDF" },
+        { title: "Cycle Analysis Cheatsheet", type: "Notes" },
+        { title: "Risk Management Template", type: "Worksheet" },
+      ];
+    }
+    if (isSales) {
+      return [
+        { title: "Closing Script Framework", type: "PDF" },
+        { title: "Objection Handling Prompts", type: "Notes" },
+        { title: "Call Review Worksheet", type: "Worksheet" },
+      ];
+    }
+    if (isAI) {
+      return [
+        { title: "Prompt Engineering Cheatsheet", type: "PDF" },
+        { title: "LLM Evaluation Framework", type: "Notes" },
+        { title: "AI Workflow Build Guide", type: "Worksheet" },
+      ];
+    }
+    return [
+      { title: "System Design Notes", type: "PDF" },
+      { title: "Code Review Checklist", type: "Notes" },
+      { title: "Mini Project Brief", type: "Worksheet" },
+    ];
+  }, [isAI, isCrypto, isSales]);
+
+  const outcomes: Outcome[] = useMemo(() => {
+    if (isCrypto) {
+      return [
+        { title: "Understand Bitcoin market structure" },
+        { title: "Read price behavior with more confidence" },
+        { title: "Build a rational long-term strategy" },
+      ];
+    }
+    if (isSales) {
+      return [
+        { title: "Write stronger offers and sales scripts" },
+        { title: "Handle objections with structure" },
+        { title: "Close with more confidence and clarity" },
+      ];
+    }
+    if (isAI) {
+      return [
+        { title: "Understand practical LLM workflows" },
+        { title: "Design better prompts and AI systems" },
+        { title: "Ship AI-powered tools with purpose" },
+      ];
+    }
+    return [
+      { title: "Think like a systems engineer" },
+      { title: "Build cleaner and more scalable code" },
+      { title: "Deliver production-ready solutions" },
+    ];
+  }, [isAI, isCrypto, isSales]);
+
+  const recommendations: Recommendation[] = useMemo(() => {
+    if (isCrypto) {
+      return [
+        { title: "Trading Psychology", tag: "Recommended", icon: <Brain size={16} /> },
+        { title: "Personal Finance Systems", tag: "Money", icon: <WalletCards size={16} /> },
+        { title: "Macro Economics Basics", tag: "Finance", icon: <BarChart3 size={16} /> },
+      ];
+    }
+    if (isSales) {
+      return [
+        { title: "Personal Branding", tag: "Growth", icon: <Users size={16} /> },
+        { title: "Offer Creation", tag: "Business", icon: <BriefcaseBusiness size={16} /> },
+        { title: "Freelance Client Acquisition", tag: "Income", icon: <Target size={16} /> },
+      ];
+    }
+    if (isAI) {
+      return [
+        { title: "Automation Systems", tag: "High Value", icon: <Cpu size={16} /> },
+        { title: "AI Product Design", tag: "Build", icon: <Sparkles size={16} /> },
+        { title: "Prompt Engineering Mastery", tag: "Core", icon: <Brain size={16} /> },
+      ];
+    }
+    return [
+      { title: "Next.js Fullstack", tag: "Core", icon: <GraduationCap size={16} /> },
+      { title: "System Design", tag: "Advanced", icon: <Globe size={16} /> },
+      { title: "Backend APIs & Databases", tag: "Career", icon: <ShieldCheck size={16} /> },
+    ];
+  }, [isAI, isCrypto, isSales]);
+
+  const progressPercent = Math.round((activeStep / steps.length) * 100);
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-6 animate-in fade-in duration-700 overflow-hidden relative">
-      
-      {/* ── LEFT SIDEBAR: THE SEQUENCE ── */}
-      <div className="w-full lg:w-80 shrink-0 flex flex-col bg-[#0f0a1e]/50 border border-white/5 rounded-[2.5rem] overflow-hidden">
-        <div className="p-6 border-b border-white/5 bg-white/[0.02]">
-           <p className={cn(
-             "text-[10px] font-black uppercase tracking-[3px] mb-1",
-             isCrypto ? "text-orange-400" : isSales ? "text-pink-400" : isAI ? "text-blue-400" : "text-violet-400"
-           )}>Current Sequence</p>
-           <h2 className="text-lg font-black text-white leading-tight uppercase tracking-tighter">
-             {isCrypto ? "Bitcoin Economics" : isSales ? "Persuasion Lab" : isAI ? "Neural AI" : "Engineering"}
-           </h2>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-          {steps.map((step) => (
-            <button 
-              key={step.id}
-              onClick={() => setActiveStep(step.id)}
-              className={cn(
-                "w-full p-4 rounded-2xl border transition-all flex items-start gap-4 text-left group",
-                activeStep === step.id 
-                  ? "bg-white/5 border-white/20 shadow-lg" 
-                  : "bg-transparent border-transparent hover:bg-white/5"
-              )}
-            >
-              <div className={cn(
-                "w-6 h-6 rounded-full flex items-center justify-center shrink-0 border mt-1",
-                activeStep === step.id ? "bg-white border-white text-black" : "border-white/10 text-white/40"
-              )}>
-                {activeStep > step.id ? <CheckCircle2 size={12} /> : <span className="text-[10px] font-bold">{step.id}</span>}
+    <div className="min-h-[calc(100vh-120px)] text-white">
+      <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)_340px] gap-6">
+        {/* LEFT SIDEBAR */}
+        <aside className="bg-[#0b0817] border border-white/5 rounded-[2rem] overflow-hidden h-fit xl:sticky xl:top-6">
+          <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg">
+                <BookOpen size={20} className="text-white" />
               </div>
               <div>
-                <p className={cn("text-[10px] font-black uppercase tracking-wide mb-1", activeStep === step.id ? "text-white" : "text-[#6b6490]")}>
-                  {step.title}
+                <p className="text-[10px] uppercase tracking-[3px] text-white/40 font-black">
+                  Learning Lab
                 </p>
-                <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{step.duration}</span>
+                <p className="text-sm font-black uppercase tracking-tight text-white">
+                  Course Sequence
+                </p>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
+            </div>
 
-      {/* ── CENTER: THE MULTIMODAL LABORATORY ── */}
-      <div className="flex-1 flex flex-col bg-[#050308] border border-white/5 rounded-[3rem] overflow-hidden relative shadow-2xl">
-        
-        {/* Lab Header */}
-        <div className="h-16 border-b border-white/5 bg-white/[0.02] flex items-center justify-between px-8">
-           <div className="flex items-center gap-6">
-              <button onClick={() => setActiveTab("main")} className={cn("text-[10px] font-black uppercase tracking-widest transition-all", activeTab === "main" ? "text-white border-b-2 border-white pb-1" : "text-[#6b6490] hover:text-white")}>
-                {isCrypto ? "Market Pulse" : isSales ? "Voice Link" : isAI ? "Neural Sandbox" : "Terminal"}
-              </button>
-              <button onClick={() => setActiveTab("video")} className={cn("text-[10px] font-black uppercase tracking-widest transition-all", activeTab === "video" ? "text-white border-b-2 border-white pb-1" : "text-[#6b6490] hover:text-white")}>Briefing Video</button>
-           </div>
-           <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10">
-                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                 <span className="text-[9px] font-black text-white/60 uppercase tracking-tighter tracking-widest">Operational Status</span>
+            <h2 className="text-lg font-black leading-tight tracking-tight">
+              {courseMeta.title}
+            </h2>
+            <p className="text-xs text-white/40 mt-2 leading-relaxed">
+              {courseMeta.short}
+            </p>
+
+            <div className="mt-5">
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-[2px] font-black text-white/40 mb-2">
+                <span>Course Progress</span>
+                <span>{progressPercent}%</span>
               </div>
-              <Maximize2 size={14} className="text-[#6b6490] cursor-pointer hover:text-white" />
-           </div>
-        </div>
+              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-orange-400 transition-all duration-700"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
 
-        {/* Dynamic Content Area */}
-        <div className="flex-1 p-8 overflow-hidden relative">
-          {activeTab === "main" ? (
-            <>
-              {/* 1. CRYPTO INTERFACE */}
-              {isCrypto && (
-                <div className="h-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-500">
-                  <div className="text-center mb-12">
-                    <p className="text-5xl font-black text-white tracking-tighter mb-2">
-                      ${price.toLocaleString(undefined, {minimumFractionDigits: 2})}
-                    </p>
-                    <p className="text-[10px] font-black text-orange-400 uppercase tracking-[4px]">Real-Time Bitcoin Liquidity</p>
+          <div className="p-4 space-y-3">
+            {steps.map((step) => {
+              const isActive = activeStep === step.id;
+              const isDone = !!step.completed || activeStep > step.id;
+
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => {
+                    setActiveStep(step.id);
+                    if (step.type === "video") setActiveTab("video");
+                    else if (step.type === "project") setActiveTab("project");
+                    else if (step.type === "lab") setActiveTab("lab");
+                    else setActiveTab("overview");
+                  }}
+                  className={cn(
+                    "w-full p-4 rounded-2xl border transition-all text-left group",
+                    isActive
+                      ? "bg-white/[0.05] border-white/15 shadow-lg"
+                      : "bg-transparent border-transparent hover:bg-white/[0.03]"
+                  )}
+                >
+                  <div className="flex gap-4 items-start">
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border mt-0.5",
+                        isActive
+                          ? "bg-white text-black border-white"
+                          : isDone
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : "bg-white/5 text-white/40 border-white/10"
+                      )}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 size={15} />
+                      ) : (
+                        <span className="text-[11px] font-black">{step.id}</span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={cn(
+                          "text-[11px] font-black uppercase tracking-wide leading-snug",
+                          isActive ? "text-white" : "text-white/70"
+                        )}
+                      >
+                        {step.title}
+                      </p>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-[9px] uppercase tracking-[2px] text-white/30 font-bold">
+                          {step.duration}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-[2px] text-violet-400 font-bold">
+                          {step.type}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="relative w-full h-48 flex items-end gap-1 px-10">
-                    {[40, 70, 45, 90, 65, 80, 30, 100, 80, 110, 95, 120, 80, 60, 40, 90].map((h, i) => (
-                      <div key={i} style={{ height: `${h}%` }} className="flex-1 bg-gradient-to-t from-orange-500/40 to-transparent border-t border-orange-500/50 rounded-t-sm" />
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* CENTER CONTENT */}
+        <main className="bg-[#050308] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl min-h-[780px]">
+          {/* Header */}
+          <div className="border-b border-white/5 bg-white/[0.02] px-6 md:px-8 py-5">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-[2px] font-black text-white/50">
+                    {courseMeta.category}
+                  </span>
+                  <span className={cn("text-[10px] uppercase tracking-[3px] font-black", courseMeta.accent)}>
+                    {courseMeta.level}
+                  </span>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight">
+                  {currentStep.title}
+                </h1>
+                <p className="text-sm text-white/40 mt-2 max-w-2xl">
+                  Learn with guided structure, interactive tools, AI support, and project-based validation.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] uppercase tracking-[2px] font-black text-white/50">
+                    Lab Online
+                  </span>
+                </div>
+                <button className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
+                  <Maximize2 size={16} className="text-white/70" />
+                </button>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {[
+                { key: "overview", label: "Overview", icon: <FileText size={14} /> },
+                { key: "lab", label: "Interactive Lab", icon: <TerminalSquare size={14} /> },
+                { key: "video", label: "Lesson Video", icon: <Video size={14} /> },
+                { key: "notes", label: "Notes", icon: <BookOpen size={14} /> },
+                { key: "project", label: "Project", icon: <FolderKanban size={14} /> },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={cn(
+                    "px-4 py-2.5 rounded-2xl border text-[11px] uppercase tracking-[2px] font-black transition-all flex items-center gap-2",
+                    activeTab === tab.key
+                      ? "bg-white text-black border-white"
+                      : "bg-white/[0.02] border-white/10 text-white/60 hover:text-white hover:bg-white/[0.05]"
+                  )}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main content area */}
+          <div className="p-6 md:p-8">
+            {/* OVERVIEW */}
+            {activeTab === "overview" && (
+              <div className="space-y-8 animate-in fade-in duration-500">
+                <div
+                  className={cn(
+                    "rounded-[2rem] border bg-gradient-to-br p-7",
+                    courseMeta.theme
+                  )}
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div className="max-w-2xl">
+                      <p className="text-[10px] uppercase tracking-[3px] font-black text-white/40 mb-3">
+                        Current Lesson Brief
+                      </p>
+                      <h3 className="text-2xl font-black uppercase tracking-tight mb-3">
+                        Learn deeply. Apply immediately.
+                      </h3>
+                      <p className="text-sm text-white/70 leading-relaxed">
+                        This lesson is designed to help the learner understand
+                        the concept clearly, interact with it practically, and
+                        submit something measurable at the end — not just watch
+                        and forget.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 min-w-[260px]">
+                      <div className="rounded-2xl bg-black/20 border border-white/10 p-4">
+                        <p className="text-[10px] uppercase tracking-[2px] text-white/30 font-black">
+                          Duration
+                        </p>
+                        <p className="text-lg font-black mt-2">{courseMeta.duration}</p>
+                      </div>
+                      <div className="rounded-2xl bg-black/20 border border-white/10 p-4">
+                        <p className="text-[10px] uppercase tracking-[2px] text-white/30 font-black">
+                          Learners
+                        </p>
+                        <p className="text-lg font-black mt-2">{courseMeta.students}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                      <Target size={18} className="text-violet-400" />
+                      <h3 className="text-lg font-black uppercase tracking-tight">
+                        Learning Outcomes
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      {outcomes.map((item, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5"
+                        >
+                          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                            <CheckCircle2 size={15} />
+                          </div>
+                          <p className="text-sm text-white/80 leading-relaxed">
+                            {item.title}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                      <ClipboardCheck size={18} className="text-orange-400" />
+                      <h3 className="text-lg font-black uppercase tracking-tight">
+                        Lesson Resources
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      {resources.map((item, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5"
+                        >
+                          <div>
+                            <p className="text-sm font-bold text-white">{item.title}</p>
+                            <p className="text-[10px] uppercase tracking-[2px] text-white/30 font-black mt-1">
+                              {item.type}
+                            </p>
+                          </div>
+                          <button className="px-4 py-2 rounded-xl bg-white text-black text-[10px] uppercase tracking-[2px] font-black hover:scale-105 transition-all">
+                            Open
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-6">
+                  <div className="flex items-center gap-3 mb-5">
+                    <Lightbulb size={18} className="text-yellow-400" />
+                    <h3 className="text-lg font-black uppercase tracking-tight">
+                      Recommended Next
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {recommendations.map((item, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] transition-all"
+                      >
+                        <div className="w-10 h-10 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 mb-4">
+                          {item.icon}
+                        </div>
+                        <p className="text-sm font-black uppercase tracking-tight">
+                          {item.title}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-[2px] text-white/30 font-black mt-2">
+                          {item.tag}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* 2. SALES/VOICE INTERFACE */}
-              {isSales && (
-                <div className="h-full flex flex-col items-center justify-center animate-in fade-in duration-500">
-                  <div className={cn(
-                    "w-48 h-48 rounded-full border-4 flex items-center justify-center transition-all duration-700 relative",
-                    isRecording ? "border-pink-500 shadow-[0_0_100px_rgba(236,72,153,0.2)] scale-110" : "border-white/5"
-                  )}>
-                    {isRecording && <div className="absolute inset-0 rounded-full border border-pink-500/50 animate-ping" />}
-                    <Mic2 size={48} className={isRecording ? "text-pink-500" : "text-white/20"} />
-                  </div>
-                  <div className="mt-12 text-center">
-                    <div className="flex items-center gap-2 justify-center mb-2">
-                        <Activity size={14} className="text-pink-500" />
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Biometric Sync Active</span>
+            {/* LAB */}
+            {activeTab === "lab" && (
+              <div className="animate-in fade-in duration-500">
+                {/* CRYPTO LAB */}
+                {isCrypto && (
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-8">
+                    <div className="text-center mb-10">
+                      <p className="text-5xl font-black tracking-tight">
+                        ${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-[4px] font-black text-orange-400 mt-3">
+                        Simulated Market Pulse
+                      </p>
                     </div>
-                    <h3 className="text-xl font-black text-white uppercase tracking-[4px]">Neural Roleplay Hub</h3>
-                    <p className="text-xs text-[#6b6490] mt-2 italic max-w-xs mx-auto">"Handling: Price Objections. Tap the button below to start the verbal sequence."</p>
-                  </div>
-                </div>
-              )}
 
-              {/* 3. AI NEURAL SANDBOX */}
-              {isAI && (
-                <div className="h-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-500">
+                    <div className="relative h-56 w-full flex items-end gap-2 px-2">
+                      {[42, 55, 60, 45, 75, 68, 82, 58, 90, 70, 96, 88, 74, 64, 80, 92].map(
+                        (h, i) => (
+                          <div
+                            key={i}
+                            style={{ height: `${h}%` }}
+                            className="flex-1 rounded-t-xl bg-gradient-to-t from-orange-500/40 to-orange-300/5 border-t border-orange-400/50"
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* SALES LAB */}
+                {isSales && (
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-8 flex flex-col items-center justify-center min-h-[500px]">
+                    <div
+                      className={cn(
+                        "w-52 h-52 rounded-full border-4 flex items-center justify-center transition-all duration-700 relative",
+                        isRecording
+                          ? "border-pink-500 shadow-[0_0_120px_rgba(236,72,153,0.2)] scale-105"
+                          : "border-white/10"
+                      )}
+                    >
+                      {isRecording && (
+                        <div className="absolute inset-0 rounded-full border border-pink-500/40 animate-ping" />
+                      )}
+                      <Mic2
+                        size={54}
+                        className={isRecording ? "text-pink-500" : "text-white/20"}
+                      />
+                    </div>
+
+                    <div className="mt-10 text-center max-w-xl">
+                      <h3 className="text-2xl font-black uppercase tracking-tight">
+                        AI Voice Roleplay
+                      </h3>
+                      <p className="text-sm text-white/50 mt-3 leading-relaxed">
+                        Practice verbal persuasion, confidence, objection handling,
+                        and closing tone. Use this mode to simulate real sales calls.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI LAB */}
+                {isAI && (
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-8 min-h-[500px] flex flex-col items-center justify-center">
                     <div className="flex gap-8 items-center">
-                        {[1, 2, 3].map((layer) => (
-                            <div key={layer} className="space-y-4">
-                                {[1, 2, 3, 4].map((node) => (
-                                    <div key={node} className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-[10px] animate-pulse">
-                                        {Math.floor(Math.random() * 99)}
-                                    </div>
-                                ))}
+                      {[1, 2, 3].map((layer) => (
+                        <div key={layer} className="space-y-4">
+                          {[1, 2, 3, 4].map((node) => (
+                            <div
+                              key={node}
+                              className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-[11px] animate-pulse"
+                            >
+                              {Math.floor(Math.random() * 99)}
                             </div>
-                        ))}
+                          ))}
+                        </div>
+                      ))}
                     </div>
+
                     <div className="mt-10 text-center">
-                        <h3 className="text-lg font-black text-white uppercase tracking-[4px]">Transformer Weight Sandbox</h3>
-                        <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest mt-2">Adjusting Attention Head #4</p>
+                      <h3 className="text-xl font-black uppercase tracking-tight">
+                        Prompt & Model Thinking Sandbox
+                      </h3>
+                      <p className="text-[11px] text-blue-400 uppercase tracking-[3px] font-black mt-3">
+                        Attention / Context / Output Optimization
+                      </p>
                     </div>
-                </div>
-              )}
-
-              {/* 4. DEV/IDE INTERFACE */}
-              {isDev && (
-                <div className="h-full w-full bg-[#0d0d12] rounded-[2rem] border border-white/5 p-8 font-mono text-sm relative overflow-hidden animate-in slide-in-from-bottom-4">
-                  <div className="space-y-3 text-white/60">
-                    <p className="text-emerald-400 opacity-50">// System: Initializing RadaNode v4.0</p>
-                    <p className="text-violet-400">async function <span className="text-blue-400">deployCore</span>() {"{"}</p>
-                    <p className="pl-6">const <span className="text-orange-400">status</span> = await <span className="text-yellow-400">syncCluster</span>();</p>
-                    <p className="pl-6 text-emerald-400 italic">return status === "READY" ? 200 : 500;</p>
-                    <p className="text-violet-400">{"}"}</p>
-                    <div className="h-4 w-1 bg-violet-500 animate-pulse inline-block" />
                   </div>
-                  <button className="absolute bottom-8 right-8 px-8 py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-transform">Run Script</button>
-                </div>
-              )}
-            </>
-          ) : (
-            /* VIDEO TAB (Universal) */
-            <div className="h-full w-full rounded-[2rem] bg-black border border-white/10 flex items-center justify-center relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-t from-violet-950/20 to-transparent group-hover:opacity-0 transition-opacity" />
-               <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20">
-                  <Play size={32} className="text-white fill-current" />
-               </div>
-               <div className="absolute bottom-8 left-8 text-left">
-                  <p className="text-[10px] font-black text-white/40 uppercase mb-1">Intelligence Module</p>
-                  <p className="text-lg font-black text-white tracking-tighter uppercase italic">Theoretical Foundation</p>
-               </div>
-            </div>
-          )}
-        </div>
+                )}
 
-        {/* Action Footer for Lab */}
-        {activeTab === "main" && (
-           <div className="p-8 border-t border-white/5 bg-white/[0.01]">
-              {isSales ? (
-                <button 
-                    onClick={() => setIsRecording(!isRecording)}
-                    className={cn(
-                    "w-full py-6 rounded-[2rem] font-black uppercase tracking-[6px] text-xs transition-all flex items-center justify-center gap-4",
-                    isRecording ? "bg-pink-600 text-white shadow-[0_0_30px_rgba(219,39,119,0.3)]" : "bg-white text-black"
-                    )}
-                >
-                    {isRecording ? "Terminate Link" : "Initialize Verbal Link"} <Zap size={14} fill="currentColor" />
-                </button>
-              ) : (
-                <button 
+                {/* DEV LAB */}
+                {isDev && (
+                  <div className="rounded-[2rem] border border-white/5 bg-[#0d0d12] p-8 min-h-[500px] font-mono text-sm relative overflow-hidden">
+                    <div className="space-y-3 text-white/70">
+                      <p className="text-emerald-400 opacity-60">
+                        // System: Initializing production learning environment
+                      </p>
+                      <p className="text-violet-400">
+                        async function <span className="text-blue-400">deployCore</span>() {"{"}
+                      </p>
+                      <p className="pl-6">
+                        const <span className="text-orange-400">status</span> = await{" "}
+                        <span className="text-yellow-400">syncCluster</span>();
+                      </p>
+                      <p className="pl-6">
+                        const <span className="text-cyan-400">report</span> = await{" "}
+                        <span className="text-green-400">validateBuild</span>();
+                      </p>
+                      <p className="pl-6 text-emerald-400 italic">
+                        return status === "READY" && report.ok ? 200 : 500;
+                      </p>
+                      <p className="text-violet-400">{"}"}</p>
+                      <div className="h-5 w-1 bg-violet-500 animate-pulse inline-block" />
+                    </div>
+
+                    <button className="absolute bottom-8 right-8 px-6 py-3 bg-white text-black rounded-2xl font-black text-[11px] uppercase tracking-[2px] hover:scale-105 transition-transform">
+                      Run Learning Sandbox
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-6">
+                  {isSales ? (
+                    <button
+                      onClick={() => setIsRecording(!isRecording)}
+                      className={cn(
+                        "w-full py-5 rounded-[1.5rem] font-black uppercase tracking-[4px] text-xs transition-all flex items-center justify-center gap-4",
+                        isRecording
+                          ? "bg-pink-600 text-white shadow-[0_0_30px_rgba(219,39,119,0.25)]"
+                          : "bg-white text-black"
+                      )}
+                    >
+                      {isRecording ? "Stop Roleplay Session" : "Start Roleplay Session"}{" "}
+                      <Zap size={14} fill="currentColor" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowSubmitModal(true)}
+                      className="w-full py-5 bg-white text-black rounded-[1.5rem] font-black uppercase tracking-[4px] text-xs hover:scale-[1.01] transition-all flex items-center justify-center gap-4 shadow-xl"
+                    >
+                      Open Assignment Submission <Upload size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* VIDEO */}
+            {activeTab === "video" && (
+              <div className="animate-in fade-in duration-500">
+                <div className="h-[500px] w-full rounded-[2rem] bg-black border border-white/10 flex items-center justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet-950/20 via-transparent to-fuchsia-950/20" />
+                  <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/20 group-hover:scale-105 transition-all">
+                    <CirclePlay size={40} className="text-white fill-current" />
+                  </div>
+
+                  <div className="absolute bottom-8 left-8">
+                    <p className="text-[10px] uppercase tracking-[3px] text-white/40 font-black mb-2">
+                      Lesson Video
+                    </p>
+                    <p className="text-2xl font-black uppercase tracking-tight">
+                      {currentStep.title}
+                    </p>
+                    <p className="text-sm text-white/40 mt-2">
+                      Structured lesson video with guided explanation, examples, and action points.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  {[
+                    { label: "Video Length", value: currentStep.duration, icon: <Clock3 size={16} /> },
+                    { label: "Lesson Type", value: currentStep.type.toUpperCase(), icon: <Video size={16} /> },
+                    { label: "Completion", value: `${progressPercent}%`, icon: <Award size={16} /> },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-white/5 bg-[#0c0916] p-5"
+                    >
+                      <div className="w-10 h-10 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 mb-4">
+                        {item.icon}
+                      </div>
+                      <p className="text-[10px] uppercase tracking-[2px] text-white/30 font-black">
+                        {item.label}
+                      </p>
+                      <p className="text-lg font-black mt-2">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* NOTES */}
+            {activeTab === "notes" && (
+              <div className="animate-in fade-in duration-500">
+                <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-6">
+                  <div className="flex items-center gap-3 mb-5">
+                    <BookOpen size={18} className="text-violet-400" />
+                    <h3 className="text-lg font-black uppercase tracking-tight">
+                      Personal Learning Notes
+                    </h3>
+                  </div>
+
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Write down important ideas, formulas, project notes, business ideas, or revision points here..."
+                    className="w-full min-h-[380px] rounded-[1.5rem] bg-black/20 border border-white/10 p-5 text-sm text-white outline-none resize-none placeholder:text-white/20 focus:border-violet-500/40 transition-all"
+                  />
+
+                  <div className="mt-5 flex justify-end">
+                    <button className="px-6 py-3 rounded-2xl bg-white text-black text-[11px] uppercase tracking-[2px] font-black hover:scale-105 transition-all">
+                      Save Notes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PROJECT */}
+            {activeTab === "project" && (
+              <div className="animate-in fade-in duration-500 space-y-6">
+                <div className="rounded-[2rem] border border-white/5 bg-[#0c0916] p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <FolderKanban size={18} className="text-emerald-400" />
+                    <h3 className="text-lg font-black uppercase tracking-tight">
+                      Practical Project
+                    </h3>
+                  </div>
+
+                  <p className="text-sm text-white/60 leading-relaxed">
+                    Every premium course should end in proof of work. This section
+                    helps the learner submit something tangible — a repo, document,
+                    recording, portfolio artifact, strategy, or implementation.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    {[
+                      "Understand the concept",
+                      "Apply it in a practical task",
+                      "Submit for validation",
+                    ].map((item, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border border-white/5 bg-white/[0.02] p-5"
+                      >
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                          <CheckCircle2 size={16} />
+                        </div>
+                        <p className="text-sm font-bold text-white">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
                     onClick={() => setShowSubmitModal(true)}
-                    className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase tracking-[6px] text-xs hover:scale-[1.01] transition-all flex items-center justify-center gap-4 shadow-xl"
-                >
-                    Complete & Submit Project <Upload size={14} />
-                </button>
-              )}
-           </div>
-        )}
-      </div>
-
-      {/* ── RIGHT SIDEBAR: INTELLIGENCE PANEL ── */}
-      <div className="w-full lg:w-80 shrink-0 flex flex-col gap-6">
-        <div className="flex-1 bg-[#0f0a1e]/50 border border-white/5 rounded-[2.5rem] p-6 flex flex-col group hover:border-white/10 transition-colors">
-          <div className="flex items-center gap-3 mb-8">
-             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <Cpu size={20} className="text-white" />
-             </div>
-             <div>
-                <p className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Neural Link</p>
-                <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest opacity-60 italic tracking-tighter">AI Mentor 4.0</p>
-             </div>
+                    className="mt-6 w-full py-5 bg-white text-black rounded-[1.5rem] font-black uppercase tracking-[4px] text-xs hover:scale-[1.01] transition-all flex items-center justify-center gap-4 shadow-xl"
+                  >
+                    Submit Project Work <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+        </main>
 
-          <div className="flex-1 space-y-6">
-            <div className="text-xs font-medium text-[#9d96be] leading-relaxed italic border-l-2 border-violet-500/30 pl-4">
-              {isCrypto 
-                ? "Jordan, institutional whales are accumulating at this level. Notice the order flow density."
-                : isSales 
-                ? "Tone alert: You are sounding too 'eager'. Shift your tonality to a neutral, authoritative down-swing."
-                : isAI
-                ? "The weights are slightly off-center. Focus on the Attention Head #2 to optimize the gradient descent."
-                : "The system cluster is ready for deployment. Execute the sync script to finalize the node."
-              }
+        {/* RIGHT SIDEBAR */}
+        <aside className="space-y-6 h-fit xl:sticky xl:top-6">
+          {/* AI Mentor */}
+          <div className="bg-[#0b0817] border border-white/5 rounded-[2rem] p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                <Brain size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[3px] text-white/40 font-black">
+                  AI Mentor
+                </p>
+                <p className="text-sm font-black uppercase tracking-tight text-white">
+                  Personalized Guidance
+                </p>
+              </div>
             </div>
 
-            {/* Live Stats UI */}
-            <div className="space-y-4 pt-4 border-t border-white/5">
-                <p className="text-[9px] font-black text-white/20 uppercase tracking-[2px]">Real-time Diagnostics</p>
-                {[{ label: "Neural Load", v: 42, color: "bg-blue-500" }, { label: "System Sync", v: 98, color: "bg-emerald-500" }].map((s, i) => (
-                  <div key={i} className="space-y-1.5">
-                    <div className="flex justify-between text-[8px] font-black text-white/40 uppercase">
-                      <span>{s.label}</span>
-                      <span>{s.v}%</span>
-                    </div>
-                    <div className="h-0.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className={cn("h-full transition-all duration-1000", s.color)} style={{ width: `${s.v}%` }} />
-                    </div>
+            <div className="rounded-2xl border border-violet-500/10 bg-violet-500/5 p-4 text-sm text-white/75 leading-relaxed">
+              {courseMeta.mentor}
+            </div>
+
+            <div className="space-y-4 pt-6 mt-6 border-t border-white/5">
+              <p className="text-[10px] uppercase tracking-[3px] text-white/30 font-black">
+                Real-time Diagnostics
+              </p>
+
+              {[
+                { label: "Comprehension", value: 81, color: "bg-blue-500" },
+                { label: "Practical Readiness", value: 73, color: "bg-emerald-500" },
+                { label: "Momentum", value: 89, color: "bg-orange-500" },
+              ].map((s, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex justify-between text-[10px] uppercase tracking-[2px] text-white/40 font-black">
+                    <span>{s.label}</span>
+                    <span>{s.value}%</span>
                   </div>
-                ))}
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className={cn("h-full transition-all duration-1000", s.color)}
+                      style={{ width: `${s.value}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 relative">
+              <input
+                value={mentorPrompt}
+                onChange={(e) => setMentorPrompt(e.target.value)}
+                placeholder="Ask AI mentor a question..."
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-[11px] font-bold text-white outline-none focus:border-violet-500/50 transition-all placeholder:text-white/20 pr-12"
+              />
+              <MessageSquare
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20"
+                size={16}
+              />
             </div>
           </div>
 
-          <div className="mt-8 relative">
-             <input 
-               placeholder="Query Neural Link..." 
-               className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 px-5 text-[10px] font-bold text-white outline-none focus:border-violet-500/50 transition-all placeholder:text-white/10" 
-             />
-             <MessageSquare className="absolute right-5 top-1/2 -translate-y-1/2 text-white/10" size={14} />
-          </div>
-        </div>
-
-        <div className="p-6 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                    <Trophy size={14} />
-                </div>
-                <div>
-                    <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Rewards Potential</p>
-                    <p className="text-xs font-black text-white uppercase tracking-tighter">+500 RADA XP</p>
-                </div>
+          {/* Stats */}
+          <div className="bg-[#0b0817] border border-white/5 rounded-[2rem] p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <BarChart3 size={18} className="text-emerald-400" />
+              <h3 className="text-lg font-black uppercase tracking-tight">
+                Learning Stats
+              </h3>
             </div>
-        </div>
+
+            <div className="space-y-4">
+              {[
+                { label: "Current XP Reward", value: "+500 XP", icon: <Trophy size={15} /> },
+                { label: "Completion Streak", value: "9 Days", icon: <Star size={15} /> },
+                { label: "Lesson Mode", value: "Interactive", icon: <Activity size={15} /> },
+                { label: "Career Relevance", value: "High", icon: <BriefcaseBusiness size={15} /> },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      {item.icon}
+                    </div>
+                    <p className="text-sm font-bold text-white">{item.label}</p>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[2px] text-white/40 font-black">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Assignment CTA */}
+          <div className="bg-gradient-to-br from-violet-600/15 via-fuchsia-600/10 to-orange-500/10 border border-violet-500/20 rounded-[2rem] p-6">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-white mb-4">
+              <Award size={20} />
+            </div>
+            <h3 className="text-xl font-black uppercase tracking-tight">
+              Finish Strong
+            </h3>
+            <p className="text-sm text-white/60 mt-3 leading-relaxed">
+              Complete the lab, submit your project, and unlock rewards, proof-of-skill, and better recommendations.
+            </p>
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="mt-5 w-full py-4 rounded-2xl bg-white text-black text-[11px] uppercase tracking-[2px] font-black hover:scale-105 transition-all"
+            >
+              Submit Final Work
+            </button>
+          </div>
+        </aside>
       </div>
 
-      {/* ── SUBMISSION MODAL ── */}
+      {/* SUBMIT MODAL */}
       {showSubmitModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setShowSubmitModal(false)} />
-            <div className="relative w-full max-w-lg bg-[#0f0a1e] border border-white/10 rounded-[3rem] p-10 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-pink-500" />
-                <button onClick={() => setShowSubmitModal(false)} className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors">
-                    <X size={20} />
-                </button>
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+            onClick={() => setShowSubmitModal(false)}
+          />
+          <div className="relative w-full max-w-2xl bg-[#0f0a1e] border border-white/10 rounded-[2.5rem] p-8 md:p-10 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400" />
 
-                <div className="text-center mb-10">
-                    <div className="w-16 h-16 rounded-3xl bg-violet-600/20 flex items-center justify-center text-violet-500 mx-auto mb-6 border border-violet-500/30 shadow-2xl">
-                        <Upload size={30} />
-                    </div>
-                    <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2 italic">Project Validation</h2>
-                    <p className="text-sm text-[#6b6490] font-medium">Upload your lab proof or repository link for AI verification.</p>
-                </div>
+            <button
+              onClick={() => setShowSubmitModal(false)}
+              className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
 
-                <div className="space-y-4">
-                    <div className="p-6 border-2 border-dashed border-white/5 rounded-3xl hover:border-violet-500/30 transition-all cursor-pointer group bg-white/[0.02]">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest text-center group-hover:text-violet-400">Drag & Drop Lab Documentation</p>
-                    </div>
-                    <input 
-                        placeholder="Link to Git Repo or Deployment..." 
-                        className="w-full bg-white/5 border border-white/5 rounded-2xl py-5 px-6 text-xs font-bold text-white outline-none focus:border-violet-500/40" 
-                    />
-                    <button className="w-full py-5 bg-violet-600 text-white rounded-2xl font-black uppercase tracking-[4px] text-xs hover:bg-violet-500 transition-all shadow-lg shadow-violet-600/20">
-                        Finalize Submission
-                    </button>
-                </div>
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 rounded-3xl bg-violet-600/20 flex items-center justify-center text-violet-400 mx-auto mb-5 border border-violet-500/30">
+                <Upload size={28} />
+              </div>
+              <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
+                Project Submission
+              </h2>
+              <p className="text-sm text-white/40 max-w-xl mx-auto">
+                Upload your practical work, notes, GitHub repository, voice recording,
+                or final project proof for validation.
+              </p>
             </div>
+
+            <div className="space-y-4">
+              <div className="p-6 border-2 border-dashed border-white/10 rounded-3xl hover:border-violet-500/30 transition-all cursor-pointer group bg-white/[0.02]">
+                <p className="text-[11px] font-black text-white/30 uppercase tracking-[3px] text-center group-hover:text-violet-400">
+                  Drag & Drop Assignment / Project Files
+                </p>
+              </div>
+
+              <input
+                placeholder="Paste GitHub repo, deployment link, Loom, or document URL..."
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-medium text-white outline-none focus:border-violet-500/40 placeholder:text-white/20"
+              />
+
+              <textarea
+                placeholder="Write a short summary of what you built, learned, or submitted..."
+                className="w-full min-h-[140px] bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-sm font-medium text-white outline-none focus:border-violet-500/40 placeholder:text-white/20 resize-none"
+              />
+
+              <button className="w-full py-5 bg-violet-600 text-white rounded-2xl font-black uppercase tracking-[4px] text-xs hover:bg-violet-500 transition-all shadow-lg shadow-violet-600/20">
+                Finalize Submission
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
