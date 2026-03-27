@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, ShieldCheck, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -13,13 +15,47 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── INTEGRATED AUTHENTICATION LOGIC ──
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 2500);
+    setError(null);
+
+    try {
+      const response = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Authorization failed. Check your access key.");
+      }
+
+      // 1. Store Access Token for authenticated requests
+      localStorage.setItem("rada_token", data.access_token);
+      
+      // 2. Store User ID for profile context
+      localStorage.setItem("rada_user_id", data.user.id);
+
+      // 3. Optional: Store email if 'remember me' is checked
+      if (remember) {
+        localStorage.setItem("rada_remembered_email", email);
+      }
+
+      // 4. Redirect to the Core Dashboard
+      router.push("/dashboard");
+
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+    }
   };
 
   if (!mounted) return null;
@@ -111,6 +147,13 @@ export default function LoginPage() {
             New here?{" "}
             <Link href="/signup" className="text-violet-400 font-medium hover:text-pink-300 transition-colors">Join the network →</Link>
           </p>
+
+          {/* ── ERROR DISPLAY ── */}
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold animate-in fade-in zoom-in-95">
+              {error}
+            </div>
+          )}
 
           {/* Social Auth */}
           <div className="grid grid-cols-2 gap-3 mb-8">
