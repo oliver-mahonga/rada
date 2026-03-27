@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added for redirect
+import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck, ArrowRight, Eye, EyeOff, Globe, BookOpen, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +12,11 @@ export default function SignUpPage() {
   const [showPass, setShowPass] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 1. Integrated Form State
+  useEffect(() => { setMounted(true); }, []);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -22,12 +25,12 @@ export default function SignUpPage() {
     password: "",
   });
 
-  // 2. Integrated Submit Logic
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) return;
 
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch("http://localhost:3001/auth/signup", {
@@ -44,28 +47,33 @@ export default function SignUpPage() {
         throw new Error(data.message || "Enrollment failed");
       }
 
-      // 3. Save User ID for Onboarding Reference
+      // Save BOTH ID and Email for the verification screen
       localStorage.setItem("rada_user_id", data.id);
+      localStorage.setItem("rada_user_email", formData.email);
+      
+      if (data.access_token) {
+        localStorage.setItem("rada_token", data.access_token);
+        document.cookie = `rada_token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      }
 
-      // 4. Redirect to Verification Page
       router.push("/verify-email");
       
     } catch (error: any) {
-      alert(error.message || "An error occurred during enrollment.");
+      setError(error.message || "An error occurred during enrollment.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper to update state
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  if (!mounted) return null;
+
   return (
     <div className="min-h-screen bg-[#06050e] text-[#f0ecff] grid grid-cols-1 lg:grid-cols-2 font-sans overflow-hidden">
       
-      {/* ── LEFT PANEL (UI ONLY) ── */}
       <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#07060f]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_10%_10%,rgba(49,10,200,0.2)_0%,transparent_60%),radial-gradient(ellipse_50%_70%_at_90%_90%,rgba(99,6,200,0.1)_0%,transparent_60%)] pointer-events-none" />
         <div 
@@ -123,7 +131,6 @@ export default function SignUpPage() {
         </p>
       </div>
 
-      {/* ── RIGHT PANEL (INTEGRATED FORM) ── */}
       <div className="relative flex items-start justify-center p-8 lg:p-16 bg-[#06050e] overflow-y-auto">
         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#6306c8]/50 to-transparent" />
         <div className="absolute -top-36 -right-36 w-[400px] h-[400px] rounded-full bg-violet-500/5 blur-[100px] pointer-events-none" />
@@ -141,6 +148,12 @@ export default function SignUpPage() {
             Already a member?{" "}
             <Link href="/login" className="text-violet-400 font-medium hover:text-pink-300 transition-colors">Sign in →</Link>
           </p>
+
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold animate-in fade-in zoom-in-95">
+              ⚠️ {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-[18px]">
             <div className="grid grid-cols-2 gap-3">
@@ -249,7 +262,16 @@ export default function SignUpPage() {
                 : <>Begin Enrollment <ArrowRight size={15} /></>}
             </button>
           </form>
-          {/* Footer UI elements remain same as your original */}
+
+          <div className="mt-8 p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center gap-3.5 hover:border-violet-500/20 transition-all">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/15 flex items-center justify-center shrink-0">
+              <ShieldCheck size={17} className="text-violet-400" />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold tracking-[2px] uppercase text-white/70">Secure Gateway Active</div>
+              <div className="text-[9px] tracking-[1.5px] uppercase text-white/25 font-medium">AES-256 Encryption · TLS 1.3 · SSL</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

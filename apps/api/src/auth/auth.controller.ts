@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
@@ -18,6 +18,13 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Member Access Authorization' })
   login(@Body() loginAuthDto: LoginAuthDto) {
-    return this.authService.login(loginAuthDto); // We'll add this to service next
+    return this.authService.login(loginAuthDto);
+  }
+
+  // NEW: The "Doorway" for your Frontend to check verification status
+  @Get('verify/:id')
+  @ApiOperation({ summary: 'Check if user email is verified' })
+  async checkVerify(@Param('id') id: string) {
+    return this.authService.checkVerification(id);
   }
 }
