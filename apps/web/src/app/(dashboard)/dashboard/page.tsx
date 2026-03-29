@@ -9,12 +9,79 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import AIStrategyCard from "@/components/dashboard/mission-control/AIStrategyCard";
+import DailyMissions from "@/components/dashboard/mission-control/DailyMissions";
+import HeroSection from "@/components/dashboard/mission-control/HeroSection";
+import IncomeTracks from "@/components/dashboard/mission-control/IncomeTracks";
+import Leaderboard from "@/components/dashboard/mission-control/Leaderboard";
+import MarketOpportunities from "@/components/dashboard/mission-control/MarketOpportunities";
+import QuickActions from "@/components/dashboard/mission-control/QuickActions";
+import RecentActivity from "@/components/dashboard/mission-control/RecentActivity";
+import RecommendedCourses from "@/components/dashboard/mission-control/RecommendedCourses";
+import StatsGrid from "@/components/dashboard/mission-control/StatsGrid";
+import SummaryBar from "@/components/dashboard/mission-control/SummaryBar";
+import TabButton from "@/components/dashboard/mission-control/TabButton";
+
+function useCounter(end: number, duration = 1800, start = 0) {
+  const [count, setCount] = useState(start);
+  useEffect(() => {
+    let startTime: number;
+    let raf: number;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * (end - start) + start));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [end, duration, start]);
+  return count;
+}
+
 export default function MissionControl() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [serverData, setServerData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isScanning, setIsScanning] = useState(true); // Scanning State
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    async function syncNeuralLink() {
+      try {
+        const response = await fetch("http://localhost:3001/dashboard/YOUR_USER_ID");
+        const data = await response.json();
+        setServerData(data);
+        // Keep scanning animation for 2 seconds for "Aura" effect
+        setTimeout(() => setIsScanning(false), 2000);
+      } catch (error) {
+        console.error("Sync Failed", error);
+        setIsScanning(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    syncNeuralLink();
     setMounted(true);
   }, []);
+
+  const xp = useCounter(serverData?.stats?.xp ?? 0);
+  const streak = useCounter(serverData?.stats?.streak ?? 0);
+  const completion = useCounter(serverData?.stats?.completion ?? 0);
+  const readiness = useCounter(serverData?.stats?.readiness ?? 0);
+
+  // Navigation Handler
+  const handleCourseClick = (courseId: string) => {
+    router.push(`/dashboard/courses/${courseId}`);
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#050310]" />;
 
   return (
     <div className={cn(
@@ -80,6 +147,61 @@ export default function MissionControl() {
                   <p className="text-[8px] font-bold text-emerald-500 uppercase">Retention Rate</p>
                </div>
                <TrendingUp className="text-emerald-500 mb-1" size={16} />
+    <>
+      <style>{`
+        @keyframes scanline {
+          0% { transform: translateY(-100%); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateY(1000%); opacity: 0; }
+        }
+        .scanning-line {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, transparent, rgba(139,92,246,0.2), transparent);
+          height: 100px;
+          width: 100%;
+          animation: scanline 3s linear infinite;
+          pointer-events: none;
+        }
+      `}</style>
+
+      <div className={`min-h-screen bg-[#050310] text-white pb-24 px-4 md:px-8 transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        {isScanning && <div className="scanning-line z-50" />}
+        
+        <HeroSection mounted={mounted} pulseRing={true} canvasRef={canvasRef} />
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          {["overview", "courses", "opportunities", "earnings", "community", "ai-mentor"].map((t) => (
+            <TabButton key={t} label={t} active={activeTab === t} onClick={() => setActiveTab(t)} />
+          ))}
+        </div>
+
+        {activeTab === "overview" && (
+          <>
+            <QuickActions />
+            <StatsGrid xp={xp} />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+              <div className="xl:col-span-2 space-y-8">
+                <RecommendedCourses 
+                  mounted={mounted} 
+                  courses={serverData?.recommendedCourses ?? []} 
+                  onCourseClick={handleCourseClick} // Pass Navigation Function
+                />
+                <MarketOpportunities />
+                <DailyMissions missions={serverData?.missions ?? []} />
+              </div>
+              <div className="space-y-8">
+                <AIStrategyCard 
+                  readiness={readiness} 
+                  completion={completion} 
+                  streak={streak} 
+                  isScanning={isScanning}
+                  move={isScanning ? "RE-CALCULATING..." : serverData?.aiStrategy?.move} 
+                />
+                <IncomeTracks />
+                <RecentActivity />
+                <Leaderboard />
+              </div>
             </div>
           </div>
         </div>
@@ -212,6 +334,9 @@ export default function MissionControl() {
           </div>
         </div>
 
+            <SummaryBar streak={streak} completion={completion} readiness={readiness} />
+          </>
+        )}
       </div>
     </div>
   );
