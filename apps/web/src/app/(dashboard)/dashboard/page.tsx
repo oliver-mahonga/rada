@@ -60,7 +60,41 @@ type Tab =
   | "community"
   | "ai-mentor";
 
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import AIStrategyCard from "@/components/dashboard/mission-control/AIStrategyCard";
+import DailyMissions from "@/components/dashboard/mission-control/DailyMissions";
+import HeroSection from "@/components/dashboard/mission-control/HeroSection";
+import IncomeTracks from "@/components/dashboard/mission-control/IncomeTracks";
+import Leaderboard from "@/components/dashboard/mission-control/Leaderboard";
+import MarketOpportunities from "@/components/dashboard/mission-control/MarketOpportunities";
+import QuickActions from "@/components/dashboard/mission-control/QuickActions";
+import RecentActivity from "@/components/dashboard/mission-control/RecentActivity";
+import RecommendedCourses from "@/components/dashboard/mission-control/RecommendedCourses";
+import StatsGrid from "@/components/dashboard/mission-control/StatsGrid";
+import SummaryBar from "@/components/dashboard/mission-control/SummaryBar";
+import TabButton from "@/components/dashboard/mission-control/TabButton";
+
+function useCounter(end: number, duration = 1800, start = 0) {
+  const [count, setCount] = useState(start);
+  useEffect(() => {
+    let startTime: number;
+    let raf: number;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * (end - start) + start));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [end, duration, start]);
+  return count;
+}
+
 export default function MissionControl() {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [pulseRing, setPulseRing] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -73,6 +107,21 @@ export default function MissionControl() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    async function syncNeuralLink() {
+      try {
+        const response = await fetch("http://localhost:3001/dashboard/YOUR_USER_ID");
+        const data = await response.json();
+        setServerData(data);
+        // Keep scanning animation for 2 seconds for "Aura" effect
+        setTimeout(() => setIsScanning(false), 2000);
+      } catch (error) {
+        console.error("Sync Failed", error);
+        setIsScanning(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    syncNeuralLink();
     setMounted(true);
     const t = setTimeout(() => setPulseRing(true), 600);
     return () => clearTimeout(t);
