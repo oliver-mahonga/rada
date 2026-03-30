@@ -21,7 +21,6 @@ export class AuthController {
     return this.authService.login(loginAuthDto);
   }
 
-  // NEW: The "Doorway" for your Frontend to check verification status
   @Get('verify/:id')
   @ApiOperation({ summary: 'Check if user email is verified' })
   async checkVerify(@Param('id') id: string) {

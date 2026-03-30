@@ -8,20 +8,86 @@ datasource db {
 }
 
 model Profile {
-  id         String   @id @db.Uuid
-  email      String   @unique
-  username   String   @unique
-  firstName  String?  @map("first_name")
-  lastName   String?  @map("last_name")
+  id          String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  email       String   @unique
+  username    String   @unique
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  headline    String?
+  bio         String?
+  skills      String[] @default([])
+  isVerified  Boolean  @default(false) @map("is_verified")
   
-  // Elite Profile Fields for Onboarding
-  headline   String?
-  bio        String?
-  skills     String[] @default([])
-  isVerified Boolean  @default(false) @map("is_verified")
-  
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  // Stats needed for Dashboard logic
+  xp          Int      @default(0)
+  readiness   Int      @default(0)
+  streak      Int      @default(0)
+  completion  Int      @default(0)
+
+  // Relations
+  progress    UserProgress[]
+  missions    DailyMission[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("profiles")
+}
+
+enum CourseCategory {
+  ai
+  dev
+  crypto
+  sales
+}
+
+model Course {
+  id           String         @id @default(uuid()) @db.Uuid
+  title        String
+  category     CourseCategory
+  level        String         // e.g., "Advanced"
+  students     String         @default("0")
+  status       String         @default("Operational")
+  duration     String
+  lessons      Int
+  rating       Float          @default(5.0)
+  xp           Int            @default(100)
+  description  String
+  gradient     String         
+  border       String         
+  badge        String?
+  tools        String[]       @default([])
+  outcomes     String[]       @default([])
+  
+  userProgress UserProgress[]
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@map("courses")
+}
+
+model UserProgress {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  courseId     String   @db.Uuid
+  progress     Int      @default(0) 
+  status       String   @default("IN_PROGRESS") 
+  lastAccessed DateTime @default(now()) @map("last_accessed")
+  
+  profile      Profile  @relation(fields: [userId], references: id)
+  course       Course   @relation(fields: [courseId], references: id)
+  
+  @@unique([userId, courseId])
+  @@map("user_progress")
+}
+
+model DailyMission {
+  id      String  @id @default(uuid()) @db.Uuid
+  title   String
+  xp      Int
+  icon    String  
+  isDone  Boolean @default(false)
+  userId  String  @db.Uuid
+  profile Profile @relation(fields: [userId], references: id)
+
+  @@map("daily_missions")
 }

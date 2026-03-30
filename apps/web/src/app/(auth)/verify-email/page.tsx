@@ -45,7 +45,7 @@ export default function EmailVerificationPage() {
     try {
       // IMPORTANT: Using the /api prefix as shown in your Swagger
       const response = await fetch(
-        `http://localhost:3001/api/auth/verify/${currentId}`,
+        `http://localhost:3001/auth/verify/${currentId}`,
       );
 
       if (!response.ok) {

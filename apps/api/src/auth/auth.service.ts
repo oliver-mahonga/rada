@@ -24,6 +24,7 @@ export class AuthService {
   async create(createAuthDto: CreateAuthDto) {
     this.logger.log(`Attempting enrollment for: ${createAuthDto.email}`);
 
+    // Use standard client for public signup
     const { data: authData, error: authError } = await this.supabase
       .getClient()
       .auth.signUp({
@@ -44,12 +45,15 @@ export class AuthService {
           username: createAuthDto.username,
           firstName: createAuthDto.firstName,
           lastName: createAuthDto.lastName,
-          isVerified: false, // Default to false
+          isVerified: false,
         },
       });
 
       this.logger.log(`User profile synced: ${newProfile.username}`);
-      return newProfile;
+      return {
+        ...newProfile,
+        access_token: authData.session?.access_token,
+      };
     } catch (dbError) {
       this.logger.error('Database Sync Error:', dbError);
       throw new InternalServerErrorException('Profile synchronization failed.');
@@ -72,22 +76,21 @@ export class AuthService {
 
     return {
       user: data.user,
-      session: {
-        access_token: data.session?.access_token,
-        refresh_token: data.session?.refresh_token,
-      },
+      id: data.user.id,
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
     };
   }
 
   /**
-   * REFINED: Checks Supabase admin records for verification
+   * FIXED: Uses getAdminClient() to avoid Bearer Token errors
    */
   async checkVerification(userId: string) {
     this.logger.log(`Checking verification status for user: ${userId}`);
 
-    // We use admin access to check the user record in Supabase Auth
+    // CRITICAL FIX: Use the Admin Client for getUserById
     const { data, error } = await this.supabase
-      .getClient()
+      .getAdminClient()
       .auth.admin.getUserById(userId);
 
     if (error || !data.user) {
@@ -95,11 +98,9 @@ export class AuthService {
       throw new NotFoundException('User record not found in Auth system');
     }
 
-    // Check if email_confirmed_at has a timestamp
     const isConfirmed = !!data.user.email_confirmed_at;
 
     if (isConfirmed) {
-      // Sync the verification status to your local PostgreSQL Profile
       await this.prisma.profile.update({
         where: { id: userId },
         data: { isVerified: true },

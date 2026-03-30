@@ -10,6 +10,7 @@
     "dev": "yarn workspaces foreach -pi run dev"
   },
   "devDependencies": {
+    "enhanced-resolve": "^5.20.1",
     "supabase": "^2.76.15"
   },
   "dependenciesMeta": {

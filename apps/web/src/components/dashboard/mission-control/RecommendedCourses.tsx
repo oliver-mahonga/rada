@@ -1,95 +1,62 @@
-import { ChevronRight, GraduationCap } from "lucide-react";
-import { RECOMMENDED_COURSES } from "./data";
-import { Course } from "./types";
+"use client";
+import { GraduationCap, Cpu, Terminal, Sparkles, Activity } from "lucide-react";
 
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
-type Props = {
-  mounted: boolean;
-};
-
-export default function RecommendedCourses({ mounted }: Props) {
+export default function RecommendedCourses({ courses, onCourseClick }: { courses: any[], onCourseClick: (id: string) => void }) {
   return (
-    <section>
-      <div className="flex items-center justify-between mb-4">
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <GraduationCap size={16} className="text-violet-400" />
-          <h2 className="text-xl font-extrabold uppercase tracking-tight">
-            Recommended Courses
-          </h2>
-          <div className="h-px w-16 bg-white/10" />
+          <div className="p-2 bg-violet-500/10 border border-violet-500/20 rounded-lg">
+            <Activity size={18} className="text-violet-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black uppercase tracking-tighter">Predictive Learning Labs</h2>
+            <p className="text-[9px] mono text-white/30 uppercase tracking-[2px]">Algorithm: Jaccard Similarity Coefficient v2.1</p>
+          </div>
         </div>
-        <button className="group flex items-center gap-1.5 mono text-[9px] font-bold uppercase tracking-[3px] text-violet-400 hover:text-white transition-all">
-          All Courses{" "}
-          <ChevronRight
-            size={11}
-            className="group-hover:translate-x-1 transition-transform"
-          />
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {RECOMMENDED_COURSES.map((course: Course, i) => (
-          <div
-            key={i}
-            className="group relative rounded-[2rem] overflow-hidden border border-white/5 card-glow transition-all duration-300 bg-[#0a0520]"
-            style={{
-              animation: `fadeUp 0.7s ease-out ${0.2 + i * 0.1}s both`,
-            }}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {courses.map((course) => (
+          <div 
+            key={course.id} 
+            className="group relative rounded-[2.5rem] p-8 border border-white/5 bg-[#0a0520]/40 backdrop-blur-2xl transition-all hover:border-violet-500/50"
           >
-            <div
-              className={cn(
-                "absolute inset-0 bg-gradient-to-br opacity-20",
-                course.accent
-              )}
-            />
-            <div className="relative z-10 p-6">
-              <div className="flex items-start justify-between mb-5">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-violet-300">
-                  {course.icon}
-                </div>
-                <span className="mono text-[9px] px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 uppercase tracking-[3px]">
-                  {course.level}
-                </span>
+            <div className="flex justify-between items-start mb-8">
+              <div className="w-14 h-14 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center text-violet-400">
+                {course.category?.toLowerCase() === 'ai' ? <Cpu size={24} /> : <Terminal size={24} />}
               </div>
-
-              <p className="mono text-[9px] uppercase tracking-[3px] text-violet-400 mb-2">
-                {course.category}
-              </p>
-              <h3 className="text-lg font-extrabold uppercase tracking-tight mb-3">
-                {course.title}
-              </h3>
-              <p className="mono text-[10px] text-white/45 mb-5">
-                {course.outcome}
-              </p>
-
-              <div className="space-y-2 mb-5">
-                <div className="flex justify-between mono text-[9px] uppercase tracking-widest">
-                  <span className="text-white/30">Progress</span>
-                  <span className="text-white">{course.progress}%</span>
+              
+              <div className="text-right">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-2">
+                  <Sparkles size={10} className="animate-pulse" />
+                  <span className="mono text-[10px] font-black tracking-tight">
+                    {Math.round((course.matchConfidence || 0) * 100)}% P(Match)
+                  </span>
                 </div>
-                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full bg-gradient-to-r progress-bar",
-                      course.accent
-                    )}
-                    style={{ width: mounted ? `${course.progress}%` : "0%" }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <p className="mono text-[9px] uppercase tracking-[3px] text-white/35">
-                  {course.students} learners
-                </p>
-                <button className="px-5 py-2.5 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-[10px] uppercase font-bold tracking-[3px]">
-                  Open
-                </button>
+                <p className="mono text-[8px] text-white/20 uppercase tracking-[2px]">Confidence Interval: High</p>
               </div>
             </div>
+
+            <div className="space-y-2 mb-6">
+              <span className="text-[10px] font-bold text-violet-500 uppercase tracking-[4px]">{course.category}</span>
+              <h3 className="text-2xl font-black uppercase tracking-tighter group-hover:text-violet-100 transition-colors">{course.title}</h3>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mb-10">
+              {course.tools?.map((tool: string) => (
+                <span key={tool} className="text-[9px] mono uppercase px-3 py-1 bg-white/5 rounded-md text-white/40 border border-white/5 group-hover:border-violet-500/20">
+                  {tool}
+                </span>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => onCourseClick(course.id)}
+              className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 group-hover:bg-violet-600 group-hover:text-white group-hover:border-violet-600 transition-all font-black text-[10px] uppercase tracking-[4px]"
+            >
+              Execute Deployment
+            </button>
           </div>
         ))}
       </div>

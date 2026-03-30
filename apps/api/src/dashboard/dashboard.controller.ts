@@ -1,12 +1,12 @@
-// import { Controller, Get, Param } from '@nestjs/common';
-// import { DashboardService } from './dashboard.service';
+import { Controller, Get, Param } from '@nestjs/common';
+import { DashboardService } from './dashboard.service';
 
-// @Controller('dashboard')
-// export class DashboardController {
-//   constructor(private dashboardService: DashboardService) {}
+@Controller('dashboard')
+export class DashboardController {
+  constructor(private readonly dashboardService: DashboardService) {}
 
-//   @Get(':userId')
-//   async getDashboard(@Param('userId') userId: string) {
-//     return this.dashboardService.getMissionControl(userId);
-//   }
-// }
+  @Get(':userId')
+  async getDashboard(@Param('userId') userId: string) {
+    return this.dashboardService.getMissionControl(userId);
+  }
+}

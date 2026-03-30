@@ -1,382 +1,142 @@
 "use client";
 
-import AIStrategyCard from "@/components/dashboard/mission-control/AIStrategyCard";
-import DailyMissions from "@/components/dashboard/mission-control/DailyMissions";
-import HeroSection from "@/components/dashboard/mission-control/HeroSection";
-import IncomeTracks from "@/components/dashboard/mission-control/IncomeTracks";
-import Leaderboard from "@/components/dashboard/mission-control/Leaderboard";
-import MarketOpportunities from "@/components/dashboard/mission-control/MarketOpportunities";
-import QuickActions from "@/components/dashboard/mission-control/QuickActions";
-import RecentActivity from "@/components/dashboard/mission-control/RecentActivity";
-import RecommendedCourses from "@/components/dashboard/mission-control/RecommendedCourses";
-import StatsGrid from "@/components/dashboard/mission-control/StatsGrid";
-import SummaryBar from "@/components/dashboard/mission-control/SummaryBar";
-import TabButton from "@/components/dashboard/mission-control/TabButton";
-import { useEffect, useRef, useState } from "react";
-// import HeroSection from "./HeroSection";
-// import QuickActions from "./QuickActions";
-// import StatsGrid from "./StatsGrid";
-// import RecommendedCourses from "./RecommendedCourses";
-// import MarketOpportunities from "./MarketOpportunities";
-// import DailyMissions from "./DailyMissions";
-// import AIStrategyCard from "./AIStrategyCard";
-// import IncomeTracks from "./IncomeTracks";
-// import RecentActivity from "./RecentActivity";
-// import Leaderboard from "./Leaderboard";
-// import SummaryBar from "./SummaryBar";
-// import TabButton from "./TabButton";
-
-function useCounter(end: number, duration = 1800, start = 0) {
-  const [count, setCount] = useState(start);
-
-  useEffect(() => {
-    let startTime: number;
-    let raf: number;
-
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * (end - start) + start));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [end, duration, start]);
-
-  return count;
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
-type Tab =
-  | "overview"
-  | "courses"
-  | "opportunities"
-  | "earnings"
-  | "community"
-  | "ai-mentor";
-
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2, Sparkles, Activity } from "lucide-react";
+
+// INTEGRATED COMPONENTS
 import AIStrategyCard from "@/components/dashboard/mission-control/AIStrategyCard";
 import DailyMissions from "@/components/dashboard/mission-control/DailyMissions";
 import HeroSection from "@/components/dashboard/mission-control/HeroSection";
-import IncomeTracks from "@/components/dashboard/mission-control/IncomeTracks";
-import Leaderboard from "@/components/dashboard/mission-control/Leaderboard";
-import MarketOpportunities from "@/components/dashboard/mission-control/MarketOpportunities";
 import QuickActions from "@/components/dashboard/mission-control/QuickActions";
-import RecentActivity from "@/components/dashboard/mission-control/RecentActivity";
-import RecommendedCourses from "@/components/dashboard/mission-control/RecommendedCourses";
 import StatsGrid from "@/components/dashboard/mission-control/StatsGrid";
-import SummaryBar from "@/components/dashboard/mission-control/SummaryBar";
+import RecommendedCourses from "@/components/dashboard/mission-control/RecommendedCourses";
 import TabButton from "@/components/dashboard/mission-control/TabButton";
-
-function useCounter(end: number, duration = 1800, start = 0) {
-  const [count, setCount] = useState(start);
-  useEffect(() => {
-    let startTime: number;
-    let raf: number;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * (end - start) + start));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [end, duration, start]);
-  return count;
-}
+import ModelDiagnostics from "@/components/dashboard/mission-control/ModelDiagnostics";
+// import ModelDiagnostics from "@/components/dashboard/ModelDiagnostics";
 
 export default function MissionControl() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [pulseRing, setPulseRing] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
-
-  const xp = useCounter(12800, 2200);
-  const streak = useCounter(9, 1800);
-  const completion = useCounter(74, 1800);
-  const readiness = useCounter(87, 1800);
-
+  const [serverData, setServerData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    async function syncNeuralLink() {
+    async function fetchDashboardData() {
       try {
-        const response = await fetch("http://localhost:3001/dashboard/YOUR_USER_ID");
+        const token = localStorage.getItem("rada_token");
+        let userId = localStorage.getItem("rada_user_id");
+
+        // Demo Fallback: If no user, default to the first one
+        if (!userId) {
+          userId = "550e8400-e29b-41d4-a716-446655440001";
+          localStorage.setItem("rada_user_id", userId);
+          localStorage.setItem("rada_token", "demo-token");
+        }
+
+        const response = await fetch(
+          `http://localhost:3001/dashboard/${userId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) throw new Error("Backend synchronization failed");
+        
         const data = await response.json();
         setServerData(data);
-        // Keep scanning animation for 2 seconds for "Aura" effect
-        setTimeout(() => setIsScanning(false), 2000);
-      } catch (error) {
-        console.error("Sync Failed", error);
-        setIsScanning(false);
+      } catch (err) {
+        console.error("Neural Link Sync Error:", err);
       } finally {
         setLoading(false);
+        setMounted(true);
       }
     }
-    syncNeuralLink();
-    setMounted(true);
-    const t = setTimeout(() => setPulseRing(true), 600);
-    return () => clearTimeout(t);
-  }, []);
+    fetchDashboardData();
+  }, [router]);
 
-  /* radar canvas */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let angle = 0;
-    let raf: number;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      const r = cx - 8;
-
-      [0.25, 0.5, 0.75, 1].forEach((scale) => {
-        ctx.beginPath();
-        ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(139,92,246,0.12)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      });
-
-      ctx.strokeStyle = "rgba(139,92,246,0.1)";
-      ctx.beginPath();
-      ctx.moveTo(cx, 0);
-      ctx.lineTo(cx, canvas.height);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, cy);
-      ctx.lineTo(canvas.width, cy);
-      ctx.stroke();
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle);
-      const cone = ctx.createLinearGradient(0, 0, r, 0);
-      cone.addColorStop(0, "rgba(139,92,246,0.5)");
-      cone.addColorStop(1, "rgba(139,92,246,0.0)");
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, r, -0.6, 0);
-      ctx.closePath();
-      ctx.fillStyle = cone;
-      ctx.fill();
-      ctx.restore();
-
-      const bx = cx + r * 0.55 * Math.cos(angle - 0.2);
-      const by = cy + r * 0.55 * Math.sin(angle - 0.2);
-      ctx.beginPath();
-      ctx.arc(bx, by, 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#10b981";
-      ctx.shadowColor = "#10b981";
-      ctx.shadowBlur = 10;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      angle += 0.015;
-      raf = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => cancelAnimationFrame(raf);
-  }, [mounted]);
+  if (loading) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-[#050310]">
+        <Loader2 className="h-10 w-10 animate-spin text-violet-500" />
+        <p className="mono text-[10px] uppercase tracking-[4px] text-white/40 mt-4">
+          Synchronizing Neural Link...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    <div
+      className={`min-h-screen bg-[#050310] text-white pb-24 px-4 md:px-8 transition-opacity duration-1000 ${mounted ? "opacity-100" : "opacity-0"}`}
+    >
+      {/* 1. Dynamic Hero Section with Top Recommendation */}
+      <HeroSection
+        mounted={mounted}
+        pulseRing={true}
+        canvasRef={canvasRef}
+        topCourse={serverData?.recommendedCourses?.[0]}
+      />
 
-        * { font-family: 'Syne', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-
-        @keyframes float {
-          from { transform: translateY(0px) translateX(0px); }
-          to   { transform: translateY(-20px) translateX(10px); }
-        }
-        @keyframes drawLine {
-          from { stroke-dashoffset: 600; }
-          to   { stroke-dashoffset: 0; }
-        }
-        @keyframes scanline {
-          0%   { transform: translateY(-100%); }
-          100% { transform: translateY(400%); }
-        }
-        @keyframes borderGlow {
-          0%, 100% { border-color: rgba(139,92,246,0.3); }
-          50%       { border-color: rgba(236,72,153,0.5); }
-        }
-        @keyframes gridScroll {
-          from { background-position: 0 0; }
-          to   { background-position: 0 60px; }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .card-glow:hover { box-shadow: 0 0 40px rgba(139,92,246,0.15); }
-        .progress-bar { transition: width 1.5s cubic-bezier(0.16,1,0.3,1); }
-        .hero-bg {
-          background:
-            radial-gradient(ellipse 80% 60% at 70% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 20% 80%, rgba(236,72,153,0.08) 0%, transparent 55%),
-            #050310;
-        }
-        .grid-bg {
-          background-image:
-            linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
-          background-size: 40px 40px;
-          animation: gridScroll 8s linear infinite;
-        }
-        .stat-num { font-variant-numeric: tabular-nums; }
-      `}</style>
-
-      <div
-        className={cn(
-          "min-h-screen bg-[#050310] text-white pb-24 px-4 md:px-8 transition-all duration-700",
-          mounted ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <HeroSection
-          mounted={mounted}
-          pulseRing={pulseRing}
-          canvasRef={canvasRef}
-        />
-
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-3 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <TabButton label="Overview" active={true} onClick={() => {}} />
           <TabButton
-            label="Overview"
-            active={activeTab === "overview"}
-            onClick={() => setActiveTab("overview")}
-          />
-          <TabButton
-            label="Courses"
-            active={activeTab === "courses"}
-            onClick={() => setActiveTab("courses")}
-          />
-          <TabButton
-            label="Opportunities"
-            active={activeTab === "opportunities"}
-            onClick={() => setActiveTab("opportunities")}
-          />
-          <TabButton
-            label="Earnings"
-            active={activeTab === "earnings"}
-            onClick={() => setActiveTab("earnings")}
-          />
-          <TabButton
-            label="Community"
-            active={activeTab === "community"}
-            onClick={() => setActiveTab("community")}
-          />
-          <TabButton
-            label="AI Mentor"
-            active={activeTab === "ai-mentor"}
-            onClick={() => setActiveTab("ai-mentor")}
+            label="Labs"
+            active={false}
+            onClick={() => router.push("/courses")}
           />
         </div>
 
-        {/* Overview */}
-        {activeTab === "overview" && (
-          <>
-            <QuickActions />
-            <StatsGrid xp={xp} />
-
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-              <div className="xl:col-span-2 space-y-8">
-                <RecommendedCourses mounted={mounted} />
-                <MarketOpportunities />
-                <DailyMissions />
-              </div>
-
-              <div className="space-y-8">
-                <AIStrategyCard
-                  readiness={readiness}
-                  completion={completion}
-                  streak={streak}
-                />
-                <IncomeTracks />
-                <RecentActivity />
-                <Leaderboard />
-              </div>
-            </div>
-
-            <SummaryBar
-              streak={streak}
-              completion={completion}
-              readiness={readiness}
-            />
-          </>
-        )}
-
-        {/* Courses */}
-        {activeTab === "courses" && (
-          <div className="space-y-8">
-            <StatsGrid xp={xp} />
-            <RecommendedCourses mounted={mounted} />
-            <DailyMissions />
-          </div>
-        )}
-
-        {/* Opportunities */}
-        {activeTab === "opportunities" && (
-          <div className="space-y-8">
-            <MarketOpportunities />
-            <AIStrategyCard
-              readiness={readiness}
-              completion={completion}
-              streak={streak}
-            />
-          </div>
-        )}
-
-        {/* Earnings */}
-        {activeTab === "earnings" && (
-          <div className="space-y-8">
-            <IncomeTracks />
-            <MarketOpportunities />
-            <SummaryBar
-              streak={streak}
-              completion={completion}
-              readiness={readiness}
-            />
-          </div>
-        )}
-
-        {/* Community */}
-        {activeTab === "community" && (
-          <div className="space-y-8">
-            <Leaderboard />
-            <RecentActivity />
-          </div>
-        )}
-
-        {/* AI Mentor */}
-        {activeTab === "ai-mentor" && (
-          <div className="space-y-8">
-            <AIStrategyCard
-              readiness={readiness}
-              completion={completion}
-              streak={streak}
-            />
-            <QuickActions />
-          </div>
-        )}
+        {/* 2. Model Diagnostics Trigger Button */}
+        <button 
+          onClick={() => setShowDiagnostics(true)}
+          className="group flex items-center gap-3 px-6 py-3 rounded-2xl bg-violet-600/10 border border-violet-500/20 hover:bg-violet-600 hover:border-violet-600 transition-all duration-500"
+        >
+          <Activity size={14} className="text-violet-400 group-hover:text-white" />
+          <span className="mono text-[10px] font-black uppercase tracking-[3px] text-violet-100">
+            View Inference Diagnostics
+          </span>
+          <Sparkles size={12} className="text-violet-400 group-hover:text-white animate-pulse" />
+        </button>
       </div>
-    </>
+
+      <QuickActions />
+
+      <StatsGrid xp={serverData?.xp ?? 0} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mt-8">
+        <div className="xl:col-span-2 space-y-12">
+          <RecommendedCourses
+            courses={serverData?.recommendedCourses ?? []}
+            onCourseClick={(id: string) => router.push(`/courses/${id}`)}
+          />
+
+          <DailyMissions missions={serverData?.missions ?? []} />
+        </div>
+
+        <div className="space-y-8">
+          <AIStrategyCard
+            readiness={serverData?.readiness ?? 0}
+            completion={serverData?.completion ?? 0}
+            streak={serverData?.streak ?? 0}
+            aiMove={serverData?.aiStrategy?.move}
+          />
+        </div>
+      </div>
+
+      {/* 3. The Model Diagnostics Modal Overlay */}
+      {showDiagnostics && (
+        <ModelDiagnostics
+          onClose={() => setShowDiagnostics(false)}
+          analysisLogs={serverData?.neuralAnalysisLogs ?? []}
+          userSkills={serverData?.skills ?? []}
+        />
+      )}
+    </div>
   );
 }
