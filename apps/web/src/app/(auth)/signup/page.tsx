@@ -47,15 +47,21 @@ export default function SignUpPage() {
         throw new Error(data.message || "Enrollment failed");
       }
 
-      // Save BOTH ID and Email for the verification screen
+      // 1. Persist User ID for onboarding/verification checks
       localStorage.setItem("rada_user_id", data.id);
       localStorage.setItem("rada_user_email", formData.email);
       
+      // 2. Set Session Token for Middleware (CRITICAL FIX)
       if (data.access_token) {
         localStorage.setItem("rada_token", data.access_token);
-        document.cookie = `rada_token=${data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+        
+        // We set the cookie with an explicit path and SameSite policy 
+        // to ensure the Next.js Middleware can read it immediately.
+        const cookieExpiry = 60 * 60 * 24 * 7; // 7 days
+        document.cookie = `rada_token=${data.access_token}; path=/; max-age=${cookieExpiry}; SameSite=Lax;`;
       }
 
+      // 3. Move to verification
       router.push("/verify-email");
       
     } catch (error: any) {
@@ -74,6 +80,7 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen bg-[#06050e] text-[#f0ecff] grid grid-cols-1 lg:grid-cols-2 font-sans overflow-hidden">
       
+      {/* Left Panel: Branding & Value Prop */}
       <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#07060f]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_10%_10%,rgba(49,10,200,0.2)_0%,transparent_60%),radial-gradient(ellipse_50%_70%_at_90%_90%,rgba(99,6,200,0.1)_0%,transparent_60%)] pointer-events-none" />
         <div 
@@ -131,6 +138,7 @@ export default function SignUpPage() {
         </p>
       </div>
 
+      {/* Right Panel: Form */}
       <div className="relative flex items-start justify-center p-8 lg:p-16 bg-[#06050e] overflow-y-auto">
         <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#6306c8]/50 to-transparent" />
         <div className="absolute -top-36 -right-36 w-[400px] h-[400px] rounded-full bg-violet-500/5 blur-[100px] pointer-events-none" />
