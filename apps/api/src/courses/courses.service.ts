@@ -25,7 +25,6 @@ export class CoursesService {
 
     if (!course) throw new NotFoundException(`Course with ID ${id} not found`);
 
-    // Logic to add a mentor tip based on the category
     const mentorTips = {
       ai: 'Think in terms of systems: prompt design, retrieval, and business utility.',
       crypto:

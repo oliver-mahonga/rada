@@ -8,7 +8,6 @@ export class DashboardService {
   private generateAIStrategy(user: any, topCourse: any) {
     const { readiness, completion, streak } = user;
 
-    // Logic for the AI "Move" based on the lowest vector
     if (readiness < 40) {
       return `[SYSTEM ALERT]: Critical Skill Gap detected. Priority shift to foundational labs. Deploy ${topCourse?.title || 'Core Units'} immediately to stabilize readiness.`;
     }
@@ -38,7 +37,6 @@ export class DashboardService {
     const allCourses = await this.prisma.course.findMany();
     const completedIds = user.progress.map((p) => p.courseId);
 
-    // 1. NEIGHBOR ANALYSIS
     const neighbors = await this.prisma.profile.findMany({
       where: { skills: { hasSome: user.skills }, id: { not: userId } },
       include: { progress: true },
@@ -48,7 +46,6 @@ export class DashboardService {
       p.progress.map((pr) => pr.courseId),
     );
 
-    // 2. HYBRID RECOMMENDATION ENGINE
     const allRecommendations = allCourses
       .filter((c) => !completedIds.includes(c.id))
       .map((course) => {
@@ -64,7 +61,6 @@ export class DashboardService {
         const collabScore =
           neighbors.length === 0 ? 0 : peerInterestCount / neighbors.length;
 
-        // Dynamic Weighting
         const weight = neighbors.length === 0 ? 1.0 : 0.6;
         const hybridScore = jaccardScore * weight + collabScore * (1 - weight);
 
@@ -85,7 +81,6 @@ export class DashboardService {
       .sort((a, b) => b.recoScore - a.recoScore)
       .slice(0, 4);
 
-    // 3. GENERATE DYNAMIC STRATEGY
     const aiMove = this.generateAIStrategy(user, recommendations[0]);
 
     return {

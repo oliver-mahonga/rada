@@ -6,7 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 export class SupabaseService {
   private readonly logger = new Logger(SupabaseService.name);
   private supabase: SupabaseClient<any, any, any>;
-  // Added 'undefined' and '?' to handle the strict initialization check
+
   private supabaseAdmin?: SupabaseClient<any, any, any>;
 
   constructor(private configService: ConfigService) {
@@ -20,10 +20,8 @@ export class SupabaseService {
       throw new Error('Supabase URL or Anon Key is missing in .env');
     }
 
-    // Standard client
     this.supabase = createClient(url, anonKey);
 
-    // Admin client initialization
     if (serviceRoleKey) {
       this.supabaseAdmin = createClient(url, serviceRoleKey, {
         auth: {
