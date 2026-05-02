@@ -1,16 +1,16 @@
 "use client";
 
 const personas = [
-  { id: '550e8400-e29b-41d4-a716-446655440001', name: 'Cyber', icon: '🛡️' },
-  { id: '550e8400-e29b-41d4-a716-446655440002', name: 'AI', icon: '🤖' },
-  { id: '550e8400-e29b-41d4-a716-446655440003', name: 'Fullstack', icon: '💻' },
-  { id: '550e8400-e29b-41d4-a716-446655440004', name: 'Crypto', icon: '₿' },
-  { id: '550e8400-e29b-41d4-a716-446655440006', name: 'Newbie', icon: '🌱' },
+  { id: '550e8400-e29b-41d4-a716-446655440001', name: 'wendy', icon: '🛡️' },
+  { id: '550e8400-e29b-41d4-a716-446655440002', name: 'elton', icon: '🤖' },
+  { id: '550e8400-e29b-41d4-a716-446655440003', name: 'samson', icon: '💻' },
+  { id: '550e8400-e29b-41d4-a716-446655440004', name: 'stacy', icon: '₿' },
+  { id: '550e8400-e29b-41d4-a716-446655440006', name: 'dan', icon: '🌱' },
 ];
 
 export default function PersonaSwitcher() {
   const switchUser = (id: string) => {
-    // We set a fake token and the real UUID to bypass the login check
+  
     localStorage.setItem("rada_token", "demo-token-123");
     localStorage.setItem("rada_user_id", id);
     window.location.reload();

@@ -10,10 +10,10 @@ export function Navbar({ isCollapsed }: { isCollapsed: boolean }) {
   const [userName, setUserName] = useState("Guest");
 
   useEffect(() => {
-    // This updates the Name in the Navbar based on who is logged in
+  
     const userId = localStorage.getItem("rada_user_id");
-    if (userId?.endsWith("0001")) setUserName("Cyber Specialist");
-    if (userId?.endsWith("0002")) setUserName("AI Researcher");
+    if (userId?.endsWith("0001")) setUserName("dennis");
+    if (userId?.endsWith("0002")) setUserName("wendy ");
     if (userId?.endsWith("0003")) setUserName("Oliver Mahonga");
   }, []);
 
@@ -24,13 +24,12 @@ export function Navbar({ isCollapsed }: { isCollapsed: boolean }) {
     )}>
       <div className="h-full flex items-center justify-between gap-8">
         
-        {/* NEW: Persona Switcher in the Middle-Left */}
+        
         <div className="flex items-center gap-4">
           <p className="text-[9px] mono text-white/20 uppercase tracking-[2px] hidden xl:block">Vector Selection:</p>
           <PersonaSwitcher />
         </div>
 
-        {/* Right Section */}
         <div className="flex items-center gap-6">
           <button className="hidden lg:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl group transition-all hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-[1.02]">
             <Sparkles size={14} className="text-white animate-pulse" />

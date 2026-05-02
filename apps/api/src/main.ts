@@ -5,10 +5,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Enable CORS
-  // This allows your Next.js frontend to access the API
   app.enableCors({
-    origin: 'http://localhost:3000', // Update this if your frontend port is different
+    origin: 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
